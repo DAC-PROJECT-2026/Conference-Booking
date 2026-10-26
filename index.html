@@ -144,8 +144,8 @@
   .tl-block:hover { filter: brightness(0.93); }
   .now-line { position: absolute; top: 0; bottom: 0; width: 2px; background: var(--danger); z-index: 5; border-radius: 1px; }
 
-  .time-axis { display: flex; position: relative; height: 16px; margin-bottom: 4px; padding: 0 0 0 118px; }
-  .time-tick { position: absolute; font-size: 10px; color: var(--text3); font-family: 'DM Mono', monospace; transform: translateX(-50%); }
+  .time-axis { flex: 1; position: relative; height: 18px; }
+  .time-tick { position: absolute; font-size: 10px; color: var(--text3); font-family: 'DM Mono', monospace; transform: translateX(-50%); white-space: nowrap; }
 
   .tooltip-box {
     background: var(--text); color: #fff; border-radius: var(--radius);
@@ -273,7 +273,10 @@
         <button class="nav-btn" onclick="changeDay(1)">Next →</button>
       </div>
       <div class="legend" id="tlLegend"></div>
-      <div class="time-axis" id="timeAxis"></div>
+      <div class="tl-row" style="margin-bottom: 4px; align-items: flex-end;">
+        <span class="tl-label" style="visibility: hidden;"></span>
+        <div class="time-axis" id="timeAxis"></div>
+      </div>
       <div class="tl-row">
         <span class="tl-label"><span class="hall-dot dot-conf"></span>Conf. Hall <span style="color:var(--text3);font-weight:400">(25)</span></span>
         <div class="tl-track" id="track-conf"></div>
@@ -507,7 +510,7 @@ function renderTimeline() {
     const tick = document.createElement('span');
     tick.className = 'time-tick';
     tick.style.left = p+'%';
-    tick.textContent = h<=12?h+' AM':((h-12)+' PM');
+    tick.textContent = h === 12 ? '12 PM' : (h < 12 ? h + ' AM' : (h - 12) + ' PM');
     axis.appendChild(tick);
   });
 
@@ -517,6 +520,7 @@ function renderTimeline() {
     if (isToday && nowMins>=DAY_START && nowMins<=DAY_END) {
       const nl = document.createElement('div');
       nl.className='now-line'; nl.style.left=pct(nowMins)+'%';
+      nl.title = `Current time: ${fmtTime(now.getHours() + ':' + String(now.getMinutes()).padStart(2, '0'))}`;
       track.appendChild(nl);
     }
     bookings.filter(b=>b.hall===hid&&b.date===vk).forEach(b => {
@@ -665,6 +669,10 @@ fd.min   = dateKey(new Date());
 
 loadBookings();
 setInterval(loadBookings, 60000);
+setInterval(() => {
+  renderHallStatus();
+  renderTimeline();
+}, 15000);
 </script>
 </body>
 </html>
